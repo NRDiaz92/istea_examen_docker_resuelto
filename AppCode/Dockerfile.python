@@ -1,0 +1,16 @@
+FROM python:3.10
+
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install python3-dev python3-urllib3 unrar-free -y && \
+    apt-get upgrade -y
+
+ADD src .
+
+RUN pip install --upgrade pip && pip install --upgrade -r requirements.txt
+
+ENTRYPOINT ["flask", "run"]
+CMD ["--host", "0.0.0.0", "--port", "80", "--debug"]

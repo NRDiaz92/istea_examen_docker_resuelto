@@ -1,0 +1,129 @@
+version: '3.7'
+
+services:
+  istea-api:
+    container_name: istea-api
+    build:
+      context: ./AppCode/api
+      dockerfile: ../Dockerfile.python
+    restart: always
+    ports:
+      - 8080:80
+    networks:
+      - test-network
+    volumes:
+      - ./AppCode/api/src:/app
+    healthcheck:
+      test: ["CMD", "wget", "--tries=1", "--spider", "http://localhost:80/tech"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    env_file:
+      - AppCode/api/api.env
+    links:
+      - istea-redis
+      - istea-mongodb
+    depends_on:
+      - istea-worker-redis
+    tty: true
+
+  istea-worker-mongo:
+    container_name: istea-worker-mongo
+    build:
+      context: ./AppCode/worker
+      dockerfile: ../Dockerfile.python
+    entrypoint: python3 __init__.py initMongo
+    restart: no
+    networks:
+      - test-network
+    volumes:
+      - ./AppCode/worker/src:/app
+    env_file:
+      - ./AppCode/worker/worker.env
+    links:
+      - istea-mongodb
+    depends_on:
+      istea-mongodb:
+        condition: service_healthy
+    tty: true
+
+  istea-worker-redis:
+    container_name: istea-worker-redis
+    build:
+      context: ./AppCode/worker
+      dockerfile: ../Dockerfile.python
+    entrypoint: python3 __init__.py initRedis
+    restart: no
+    networks:
+      - test-network
+    volumes:
+      - ./AppCode/worker/src:/app
+    env_file:
+      - ./AppCode/worker/worker.env
+    depends_on:
+      istea-redis:
+        condition: service_healthy
+    tty: true
+          
+  istea-redis:
+    container_name: istea-redis
+    image: redis:alpine
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./AppCode/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      REDIS_REPLICATION_MODE: master
+      REDIS_PASSWORD: YjtfdLD6arl3rL3h
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 100M
+        reservations:
+          memory: 10M
+
+  istea-mongodb:
+    container_name: istea-mongodb
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    healthcheck:
+      test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - test-network
+
+  istea-mongogui:
+    container_name: istea-mongogui
+    image: mongo-express
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_SERVER: istea-mongodb
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@istea-mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: "admin"
+      ME_CONFIG_BASICAUTH_PASSWORD: "password"
+    ports:
+      - 8081:8081
+    networks:
+      - test-network
+    links:
+      - istea-mongodb
+    depends_on:
+      istea-mongodb:
+        condition: service_healthy
+
+networks:
+  test-network:
+    name: test-network
