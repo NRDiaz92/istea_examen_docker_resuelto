@@ -16,6 +16,20 @@ def connectionToMongo(credentials):
     mongoDBClient = mongoCollection
     return mongoDBClient
 
+def connectionToPostgres(credentials):
+    PGSQL_USER = credentials['PGSQL_USER']
+    PGSQL_PASS = credentials['PGSQL_PASS']
+    PGSQL_HOST = credentials['PGSQL_HOST']
+    PGSQL_DB = credentials['PGSQL_DB']
+    PGSQL_COLLECTION = credentials['PGSQL_COLLECTION']
+    PGSQL_CONNECTION_STRING = f"pgsqldb://{PGSQL_USER}:{PGSQL_PASS}@{PGSQL_HOST}"
+    pgsqlClient = pgsqlClient(PGSQL_CONNECTION_STRING)
+    
+    pgsqlDB = pgsqlClient[f"{PGSQL_DB}"]
+    pgsqlCollection = pgsqlDB[f"{PGSQL_COLLECTION}"]
+    pgsqlDBClient = pgsqlCollection
+    return pgsqlDBClient
+
 def connectionToRedis():
     REDIS_PASS = os.environ['REDIS_PASS']
     redisClient = redis.Redis(host='istea-redis', port=6379, db=0, password=f"{REDIS_PASS}")
