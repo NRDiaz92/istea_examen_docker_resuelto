@@ -6,17 +6,17 @@ pipeline {
             parallel {
                 stage('Build: api') {
                     steps {
-                        sh "docker build -f ${WORKSPACE}/istea_examen_docker_resuelto/AppCode/Dockerfile.python ${WORKSPACE}/istea_examen_docker_resuelto/AppCode/api/"
+                        sh "sudo docker build -f ${WORKSPACE}/istea_examen_docker_resuelto/AppCode/Dockerfile.python ${WORKSPACE}/istea_examen_docker_resuelto/AppCode/api/"
                     }
                 }
                 stage('Build: redis') {
                     steps {
-                        sh "docker build -f ${WORKSPACE}/istea_examen_docker_resuelto/AppCode/Dockerfile.python ${WORKSPACE}/istea_examen_docker_resuelto/AppCode/redis/"
+                        sh "sudo docker build -f ${WORKSPACE}/istea_examen_docker_resuelto/AppCode/Dockerfile.python ${WORKSPACE}/istea_examen_docker_resuelto/AppCode/redis/"
                     }
                 }
                 stage('Build: worker') {
                     steps {
-                        sh "docker build -f ${WORKSPACE}/istea_examen_docker_resuelto/AppCode/Dockerfile.python ${WORKSPACE}/istea_examen_docker_resuelto/AppCode/worker/"
+                        sh "sudo docker build -f ${WORKSPACE}/istea_examen_docker_resuelto/AppCode/Dockerfile.python ${WORKSPACE}/istea_examen_docker_resuelto/AppCode/worker/"
                     }
                 }
             }
