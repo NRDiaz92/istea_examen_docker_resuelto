@@ -23,6 +23,14 @@ def mongoData():
     mongoDataJson = dumps(mongoData)
     return jsonify(mongoDataJson)
 
+@tech.route('pgsql', strict_slashes=False)
+def pgsqlData():
+    pgsqlCredentials = getCredentialsFromRedis()
+    pgsqlClient = connectionTopgsql(pgsqlCredentials)
+    pgsqlData = pgsqlClient.find()
+    pgsqlDataJson = dumps(pgsqlData)
+    return jsonify(pgsqlDataJson)
+
 def getCredentialsFromRedis():
     redisClient = connectionToRedis()
     redisData = redisClient.keys()
