@@ -1,22 +1,29 @@
 pipeline {
     agent any
 
+    parameters([
+        choice(name: "ENVIRONMENT", choices: ['Dev', 'QA', 'PRD'], description: 'Select Env', required: true),
+        choice(name: 'DefaultECR', choices: ['Dockerhub'], description: 'Select ECR'),
+        string(name: "RepoAccount", description: 'Enter the Repo Account', defaultValue: 'nrdiaz92' required: true),
+        string(name: "RepoName", description: 'Provide Team Name', defaultValue: 'istea-jenkins', required: true),
+    ])
+
     stages {
         stage('Build') {
             parallel {
                 stage('Build: api') {
                     steps {
-                        sh "sudo docker build -f ${WORKSPACE}/AppCode/Dockerfile.python ${WORKSPACE}/AppCode/api/"
+                        sh "sudo docker build -t ${RepoAccount}/${RepoName}:api-${ENVIRONMENT} -f ${WORKSPACE}/AppCode/Dockerfile.python ${WORKSPACE}/AppCode/api/"
                     }
                 }
                 stage('Build: redis') {
                     steps {
-                        sh "sudo docker build -f ${WORKSPACE}/AppCode/Dockerfile.python ${WORKSPACE}/AppCode/redis/"
+                        sh "sudo docker build -t ${RepoAccount}/${RepoName}:redis-${ENVIRONMENT} -f ${WORKSPACE}/AppCode/Dockerfile.python ${WORKSPACE}/AppCode/redis/"
                     }
                 }
                 stage('Build: worker') {
                     steps {
-                        sh "sudo docker build -f ${WORKSPACE}/AppCode/Dockerfile.python ${WORKSPACE}/AppCode/worker/"
+                        sh "sudo docker build -t ${RepoAccount}/${RepoName}:worker-${ENVIRONMENT} -f ${WORKSPACE}/AppCode/Dockerfile.python ${WORKSPACE}/AppCode/worker/"
                     }
                 }
             }
@@ -24,6 +31,25 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Testing..'
+            }
+        }
+        stage('Push') {
+            parallel {
+                stage('Push: api') {
+                    steps {
+                        sh "sudo docker push ${RepoAccount}/${RepoName}:api-${ENVIRONMENT}"
+                    }
+                }
+                stage('Push: redis') {
+                    steps {
+                        sh "sudo docker push ${RepoAccount}/${RepoName}:redis-${ENVIRONMENT}"
+                    }
+                }
+                stage('Push: worker') {
+                    steps {
+                        sh "sudo docker push ${RepoAccount}/${RepoName}:worker-${ENVIRONMENT}"
+                    }
+                }
             }
         }
         stage('Deploy') {
