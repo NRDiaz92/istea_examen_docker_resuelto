@@ -6,6 +6,7 @@ pipeline {
         choice(name: 'DefaultECR', choices: ['Dockerhub'], description: 'Select ECR'),
         string(name: "RepoAccount", description: 'Enter the Repo Account', defaultValue: 'nrdiaz92', required: true),
         string(name: "RepoName", description: 'Provide Team Name', defaultValue: 'istea-jenkins', required: true),
+        boolean(name: 'Deploy', defaultValue: false, description: "Wheter to deploy or not")
     }
 
     stages {
