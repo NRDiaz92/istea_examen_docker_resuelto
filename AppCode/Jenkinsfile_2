@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: "dockerImage", description: "Name of the docker Image")
+    }
+
+    stages {
+        stage('Create docker container') {
+            steps {
+                sh "sudo docker run -dti ${dockerImage}"
+            }
+        }
+        stage('Get Docker Info') {
+            parallel {
+                stage('Docker ID') {
+                    steps {
+                        sh """sudo docker ps -a | grep -i ${dockerImage} | awk "'NR=1{print $1}'" > id.txt"""
+                    }
+                }
+                stage('Docker Name') {
+                    steps {
+                        sh """sudo docker ps -a | grep -i ${dockerImage} | awk "'NR=1{print $NF}'" > name.txt"""
+                    }
+                }
+            }
+        }
+        stage('Inspect docker container') {
+            steps {
+                sh """echo "Inspecting by ID: "$(docker inspect $(cat id.txt))"" """
+                sh """echo "Inspecting by Name: "$(docker inspect $(cat name.txt))"" """
+            }
+        }
+        stage('Delete docker container') {
+            steps {
+                sh """sudo docker rm "$(cat id.txt)" """
+            }
+        }
+    }
+}
