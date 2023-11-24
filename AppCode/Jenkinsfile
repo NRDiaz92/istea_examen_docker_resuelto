@@ -2,6 +2,10 @@ pipeline {
     agent any
 
     parameters {
+        choice(name: "ENVIRONMENT", choices: ['Dev', 'QA', 'PRD'], description: 'Select Env')
+        choice(name: 'DefaultECR', choices: ['Dockerhub'], description: 'Select ECR')
+        string(name: "RepoAccount", description: 'Enter the Repo Account', defaultValue: 'nrdiaz92')
+        string(name: "RepoName", description: 'Provide Team Name', defaultValue: 'istea-jenkins')
         choice(name: "DeployMode", choices: ['Docker-compose', 'Docker'], description: 'Select Env')
         choice(
             name: "DeployMode_2",
