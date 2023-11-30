@@ -2,69 +2,25 @@ pipeline {
     agent any
 
     parameters {
-        choice(name: "ENVIRONMENT", choices: ['Dev', 'QA', 'PRD'], description: 'Select Env')
-        choice(name: 'DefaultECR', choices: ['Dockerhub'], description: 'Select ECR')
-        string(name: "RepoAccount", description: 'Enter the Repo Account', defaultValue: 'nrdiaz92')
-        string(name: "RepoName", description: 'Provide Team Name', defaultValue: 'istea-jenkins')
-        choice(name: "DeployMode", choices: ['Docker-compose', 'Docker'], description: 'Select Env')
-        choice(
-            name: "DeployMode_2",
-            choices: ['Docker-compose','docker'],
-            description: 'Select Environment'
-        )
+        // Completar
     }
 
     stages {
-        stage('Build') {
-            parallel {
-                stage('Build: api') {
-                    steps {
-                        sh "sudo docker build -t ${RepoAccount}/${RepoName}:api-${ENVIRONMENT} -f ${WORKSPACE}/AppCode/Dockerfile.python ${WORKSPACE}/AppCode/api/"
-                    }
-                }
-                stage('Build: redis') {
-                    steps {
-                        sh "sudo docker build -t ${RepoAccount}/${RepoName}:redis-${ENVIRONMENT} -f ${WORKSPACE}/AppCode/Dockerfile.python ${WORKSPACE}/AppCode/redis/"
-                    }
-                }
-                stage('Build: worker') {
-                    steps {
-                        sh "sudo docker build -t ${RepoAccount}/${RepoName}:worker-${ENVIRONMENT} -f ${WORKSPACE}/AppCode/Dockerfile.python ${WORKSPACE}/AppCode/worker/"
-                    }
+        stage('Init') {
+            steps {
+      	        withCredentials([usernamePassword(credentialsId: 'DockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
+        	        sh "sudo docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
                 }
             }
         }
-        stage('Test') {
-            steps {
-                echo 'Testing docker image..'
-                echo 'Testing code..'
-                echo 'Unit test..'
-                echo 'Linter..'
-            }
+        stage('Build') {
+            // Completar
         }
         stage('Push') {
-            parallel {
-                stage('Push: api') {
-                    steps {
-                        sh "sudo docker push ${RepoAccount}/${RepoName}:api-${ENVIRONMENT}"
-                    }
-                }
-                stage('Push: redis') {
-                    steps {
-                        sh "sudo docker push ${RepoAccount}/${RepoName}:redis-${ENVIRONMENT}"
-                    }
-                }
-                stage('Push: worker') {
-                    steps {
-                        sh "sudo docker push ${RepoAccount}/${RepoName}:worker-${ENVIRONMENT}"
-                    }
-                }
-            }
+            // Completar
         }
         stage('Deploy') {
-            steps {
-                echo 'Deploying....'
-            }
+            // Completar
         }
     }
 }
